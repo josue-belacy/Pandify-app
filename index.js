@@ -1,5 +1,11 @@
 require('dotenv').config()
 const express = require('express')
+
+// deprecated
+const querystring = require('querystring'); 
+// deprecated
+
+const { deprecate } = require('util');
 const app = express();
 const port = 8888;
 
@@ -17,7 +23,14 @@ app.get('/', (req, res ) => {
 });
 
 app.get('/login', (req, res) => {
-  res.send(`Log in to Spotify`);
+  const queryParams = querystring.stringify({
+    client_id: CLIENT_ID,
+    response_type: 'code',
+    redirect_uri: REDIRECT_URI,
+  })
+
+
+  res.redirect(`https://accounts.spotify.com/authorize?client_id=${CLIENT_ID}&response_type=code&redirect_uri=${REDIRECT_URI}`);
 });
 
 app.listen(port, () => {
