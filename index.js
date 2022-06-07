@@ -1,11 +1,7 @@
 require('dotenv').config()
 const express = require('express')
+const queryParams = searchparams.toString();
 
-// deprecated
-const querystring = require('querystring'); 
-// deprecated
-
-const { deprecate } = require('util');
 const app = express();
 const port = 8888;
 
@@ -23,7 +19,7 @@ app.get('/', (req, res ) => {
 });
 
 app.get('/login', (req, res) => {
-  const queryParams = querystring.stringify({
+  const queryParams = new URLSearchParams({
     client_id: CLIENT_ID,
     response_type: 'code',
     redirect_uri: REDIRECT_URI,
