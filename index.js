@@ -50,9 +50,9 @@ const scope = 'user-read-private user-read-email';
     scope: scope
   })
 
-  res.redirect(`https://accounts.spotify.com/authorize?$
-  {queryParams}`);
-  
+  res.redirect(`https://accounts.spotify.com/authorize?${queryParams}`);
+})
+
   app.get('/callback', (req, res) => {
     const code = req.query.code || null;
   
@@ -106,4 +106,4 @@ const scope = 'user-read-private user-read-email';
 
 app.listen(port, () => {
   console.log(`Express app listening at http://localhost:${port}`);
-})
+});
