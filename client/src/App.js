@@ -1,7 +1,6 @@
 import { useEffect } from 'react'
 import logo from './logo.svg';
 import './App.css';
-import { query } from 'express';
 
 function App() {
   useEffect(() => {
@@ -14,7 +13,7 @@ function App() {
     console.log(refreshToken)      
     
     if (refreshToken) {
-      fetch('/refresh_token?refresh_toekn?${refreshToken}')
+      fetch(`/refresh_token?refresh_token=${refreshToken}`)
         .then(res => res.json())
         .then(data => console.log(data))
         .then(err => console.error(err))
@@ -30,7 +29,7 @@ function App() {
           Edit <code>src/App.js</code> and save to reload.
         </p>
         <a className="App-link" href="http://localhost:8888/login">
-          Log in to Spotify
+          Log into Spotify
         </a>
       </header>
     </div>
