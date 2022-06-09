@@ -13,6 +13,13 @@ function App() {
     console.log(accessToken)      
     console.log(refreshToken)      
     
+    if (refreshToken) {
+      fetch('/refresh_token?refresh_toekn?${refreshToken}')
+        .then(res => res.json())
+        .then(data => console.log(data))
+        .then(err => console.error(err))
+    }
+
   }, [])
 
   return (
