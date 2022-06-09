@@ -71,9 +71,20 @@ const scope = 'user-read-private user-read-email';
     })
       .then(response => {
         if (response.status === 200) {
-          res.send(`<pre>${JSON.stringify(response.data, null, 2)}</pre>`);
+
+          const { access_token, refresh_token } = response.data;
+          
+          const queryParams = queryString.stringify({
+            access_token,
+            refresh_token
+          })
+
+          //redirect to react app
+          res.redirect(`http://localhost:3000/?${queryParams}`)
+          //pass along tokens in query params
+
         } else {
-          res.send(response);
+          res.redirect(`/?${queryString.stringify({ error: 'invalid_token'})}`)
         }
       })
       .catch(error => {
