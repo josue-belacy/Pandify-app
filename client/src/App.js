@@ -3,12 +3,22 @@ import {
   BrowserRouter,
   Routes,
   Route,
-  Link,
+  useLocation,
 } from "react-router-dom";
 
 import { accessToken, logout, getCurrentUserProfile } from './spotify';
 import { catchErrors } from './utils';
 import './App.css';
+
+function ScrollToTop() {
+  const { pathname } = useLocation();
+
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [pathname]);
+
+  return null;
+}
 
 function App() {
   const [token, setToken] = useState(null);
@@ -34,6 +44,8 @@ function App() {
           </a>
         ) : (
           <Router>
+            <ScrollToTop />
+            
             <Switch>
               <Route path="/top-artists">
                 <h1>Top Artists</h1>
@@ -65,4 +77,6 @@ function App() {
             </Switch>
           </Router>
         )}
+      </header>
+    </div>
 export default App;
