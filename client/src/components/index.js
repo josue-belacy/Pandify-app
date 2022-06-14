@@ -1,3 +1,5 @@
-export { default as ArtistsGrid } from './ArtistsGrid';
-export { default as SectionWrapper } from './SectionWrapper';
-export { default as TrackList } from './TrackList';
+export { default as GlobalStyle } from './GlobalStyle';
+export { default as StyledGrid } from './StyledGrid';
+export { default as StyledHeader } from './StyledHeader';
+export { default as StyledSection } from './StyledSection';
+export { default as StyledTrackList } from './StyledTrackList';
