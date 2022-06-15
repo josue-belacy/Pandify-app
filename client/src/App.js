@@ -8,7 +8,7 @@ import {
 import { accessToken, logout, getCurrentUserProfile } from './spotify';
 import { catchErrors } from './utils';
 import { GlobalStyle } from './styles';
-import { Login, Profile } from './pages';
+import { Login, Profile, TopArtists } from './pages';
 
 // Scroll to top of page when changing routes
 // https://reactrouter.com/web/guides/scroll-restoration/scroll-to-top
@@ -50,7 +50,7 @@ function App() {
 
             <Switch>
               <Route path="/top-artists">
-                <h1>Top Artists</h1>
+                <TopArtists />
               </Route>
               <Route path="/top-tracks">
                 <h1>Top Tracks</h1>
