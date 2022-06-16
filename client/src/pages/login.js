@@ -16,6 +16,7 @@ const StyledLoginButton = styled.a`
   font-weight: 700;
   font-size: var(--fz-lg);
   padding: var(--spacing-sm) var(--spacing-xl);
+
   &:hover,
   &:focus {
     text-decoration: none;
@@ -23,14 +24,9 @@ const StyledLoginButton = styled.a`
   }
 `;
 
-const LOGIN_URI =
-  process.env.NODE_ENV !== 'production'
-    ? 'http://localhost:8887/login'
-    : 'https://yourspotifydata.herokuapp.com/login';
-
 const Login = () => (
   <StyledLoginContainer>
-    <StyledLoginButton href={LOGIN_URI}>
+    <StyledLoginButton href="http://localhost:8888/login">
       Log in to Spotify
     </StyledLoginButton>
   </StyledLoginContainer>
