@@ -8,7 +8,7 @@ import {
 import { accessToken, logout, getCurrentUserProfile } from './spotify';
 import { catchErrors } from './utils';
 import { GlobalStyle } from './styles';
-import { Login, Profile, TopArtists } from './pages';
+import { Login, Profile, TopArtists, TopTracks } from './pages';
 
 // Scroll to top of page when changing routes
 // https://reactrouter.com/web/guides/scroll-restoration/scroll-to-top
