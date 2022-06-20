@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { accessToken, logout, getCurrentUserProfile } from "./spotify";
-import { BrowserRouter as Router, Switch, Route, useLocation } from "react-router-dom";
+import { BrowserRouter as Router, Switch, Route, Routes, useLocation } from "react-router-dom";
 import styled from "styled-components/macro";
 import { catchErrors } from "./utils";
 import { GlobalStyle } from "./styles";
@@ -41,38 +41,31 @@ function App() {
     setToken(accessToken);
   }, []);
 
-  return (
-    <div className="App">
+ return (
+    <div className="app">
       <GlobalStyle />
-      <header className="App-header">
-        {!token ? (
-          <Login />
-        ) : (
-          <>
-            <StyledLogoutButton onClick={logout}>Log Out</StyledLogoutButton>
-            <Router>
-              <ScrollToTop />
-              <Switch>
-                <Route path="/top-artists">
-                  <h1>Top Artists</h1>
-                </Route>
-                <Route path="/top-tracks">
-                  <h1>Top Tracks</h1>
-                </Route>
-                <Route path="/playlists/:id">
-                  <h1>Playlist</h1>
-                </Route>
-                <Route path="/playlists">
-                  <h1>Playlists</h1>
-                </Route>
-                <Route path="/">
-                  <Profile />
-                </Route>
-              </Switch>
-            </Router>
-          </>
-        )}
-      </header>
+
+      {!token ? (
+        <Login />
+      ) : (
+        <>
+          <StyledLogoutButton onClick={logout}>Log Out</StyledLogoutButton>
+
+          <Router>
+            <ScrollToTop />
+
+            <Routes>
+            
+              <Route path="/top-artists" element={<TopArtists/>} />
+              <Route path="/top-tracks" element={<TopTracks/>} />
+              <Route path="/playlists" element={<Playlists/>} />
+              <Route path="/playlists/:id" element={<Playlists />} />    
+              <Route path="/" element={<Profile />} />
+                  
+            </Routes>
+          </Router>
+        </>
+      )}
     </div>
   );
 }
