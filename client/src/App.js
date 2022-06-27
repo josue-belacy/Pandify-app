@@ -6,7 +6,7 @@ import {
   useLocation
 } from "react-router-dom";
 import { accessToken, getCurrentUserProfile, logout } from "./spotify";
-// import { catchError } from "./utils";
+// import { catchError } from "./utilites";
 import styled from 'styled-components/macro'
 import { GlobalStyle } from "./styles";
 import { Login, Profile, TopArtists, TopTracks, Playlists, Playlist } from "./pages";
@@ -27,6 +27,7 @@ const StyledLogoutButton = styled.button`
     right: var(--spacing-lg);
   }
 `;
+
 
 // Scroll to top of page when changing routes
 // https://reactrouter.com/web/guides/scroll-restoration/scroll-to-top
@@ -61,7 +62,7 @@ function App() {
     fetchData()
 
     // or we can wrap it in a HOF with catchErrors
-    // I believe it is over complicated so I'm leaving it out
+    // I believe it's unnecessarily complicated so I'm leaving it out
     // catchErrors(fetchData())
 
   }, []);
