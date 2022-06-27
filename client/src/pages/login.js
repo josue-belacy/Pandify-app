@@ -24,12 +24,16 @@ const StyledLoginButton = styled.a`
   }
 `;
 
+const LOGIN_URI =
+  process.env.NODE_ENV !== 'production'
+    ? 'http://localhost:8888/login'
+    : 'https://pandify.herokuapp.com/login';
+
 const Login = () => (
   <StyledLoginContainer>
-    <StyledLoginButton href="http://localhost:8888/login">
+    <StyledLoginButton href={LOGIN_URI}>
       Log in to Spotify
     </StyledLoginButton>
   </StyledLoginContainer>
 );
-
 export default Login;
