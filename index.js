@@ -132,3 +132,5 @@ app.get('*', (req, res) => {
 app.listen(PORT, () => {
   console.log(`Express app listening at http://localhost:${PORT}`)
 })
+
+// look into 127, 502 & 503 errors from heroko log, might be Get errors
