@@ -6,7 +6,7 @@ import {
   useLocation
 } from "react-router-dom";
 import { accessToken, getCurrentUserProfile, logout } from "./spotify";
-// import { catchError } from "./utilites";
+// import { catchError } from "./utilities";
 import styled from 'styled-components/macro'
 import { GlobalStyle } from "./styles";
 import { Login, Profile, TopArtists, TopTracks, Playlists, Playlist } from "./pages";
