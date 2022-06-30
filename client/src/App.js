@@ -1,23 +1,29 @@
-import React, { useEffect, useState } from "react";
+import { logout, accessToken } from "./spotify";
 import {
-  BrowserRouter,
+  BrowserRouter as Router,
   Routes,
   Route,
-  useLocation
+  useLocation,
 } from "react-router-dom";
-import { accessToken, getCurrentUserProfile, logout } from "./spotify";
-// import { catchError } from "./utilities";
-import styled from 'styled-components/macro'
-import { GlobalStyle } from "./styles";
-import { Login, Profile, TopArtists, TopTracks, Playlists, Playlist } from "./pages";
 
+import { useEffect, useState } from "react";
+import { GlobalStyle } from "./styles";
+import {
+  Login,
+  Profile,
+  TopArtists,
+  TopTracks,
+  Playlists,
+  Playlist,
+} from "./pages";
+import styled from "styled-components/macro";
 
 const StyledLogoutButton = styled.button`
   position: absolute;
   top: var(--spacing-sm);
   right: var(--spacing-md);
   padding: var(--spacing-xs) var(--spacing-sm);
-  background-color: rgba(0,0,0,.7);
+  background-color: rgba(0, 0, 0, 0.7);
   color: var(--white);
   font-size: var(--fz-sm);
   font-weight: 700;
@@ -28,9 +34,6 @@ const StyledLogoutButton = styled.button`
   }
 `;
 
-
-// Scroll to top of page when changing routes
-// https://reactrouter.com/web/guides/scroll-restoration/scroll-to-top
 function ScrollToTop() {
   const { pathname } = useLocation();
 
@@ -42,29 +45,10 @@ function ScrollToTop() {
 }
 
 function App() {
-  const [token, setToken] = useState(null)
-  const [profile, setProfile] = useState(null)
+  const [token, setToken] = useState(null);
 
   useEffect(() => {
-    setToken(accessToken)
-
-    const fetchData = async () => {
-      try {
-        const { data } = await getCurrentUserProfile()
-        setProfile(data)
-
-        console.log(data)
-      } catch (e) {
-        console.error(e)
-      }
-    }
-
-    fetchData()
-
-    // or we can wrap it in a HOF with catchErrors
-    // I believe it's unnecessarily complicated so I'm leaving it out
-    // catchErrors(fetchData())
-
+    setToken(accessToken);
   }, []);
 
   return (
@@ -74,21 +58,19 @@ function App() {
         {!token ? (
           <Login />
         ) : (
-          <BrowserRouter>
-            <ScrollToTop />
-            <>
-              <StyledLogoutButton onClick={logout}>Log Out</StyledLogoutButton>
+          <>
+            <StyledLogoutButton onClick={logout}>Log Out</StyledLogoutButton>
+            <Router>
+              <ScrollToTop />
               <Routes>
-                <Route path="/" index element={<Profile />} />
                 <Route path="/top-artists" element={<TopArtists />} />
                 <Route path="/top-tracks" element={<TopTracks />} />
-                <Route>
-                  <Route path="/playlists" element={<Playlists />} />
-                  <Route path="/playlists/:id" element={<Playlist />} />
-                </Route>
+                <Route path="/playlists/:id" element={<Playlist />} />
+                <Route path="/playlists" element={<Playlists />} />
+                <Route path="/" element={<Profile />} />
               </Routes>
-            </>
-          </BrowserRouter>
+            </Router>
+          </>
         )}
       </header>
     </div>
