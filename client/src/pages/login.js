@@ -1,4 +1,4 @@
-import styled from "styled-components/macro";
+import styled from 'styled-components/macro';
 
 const StyledLoginContainer = styled.main`
   display: flex;
@@ -16,6 +16,7 @@ const StyledLoginButton = styled.a`
   font-weight: 700;
   font-size: var(--fz-lg);
   padding: var(--spacing-sm) var(--spacing-xl);
+
   &:hover,
   &:focus {
     text-decoration: none;
@@ -23,10 +24,15 @@ const StyledLoginButton = styled.a`
   }
 `;
 
+const LOGIN_URI =
+  process.env.NODE_ENV !== 'production'
+    ? 'http://localhost:8888/login'
+    : 'https://spotify-profile-v2.herokuapp.com/login';
+
 const Login = () => (
   <StyledLoginContainer>
-    <StyledLoginButton href="http://localhost:8888/login">
-      Log into Spotify
+    <StyledLoginButton href={LOGIN_URI}>
+      Log in to Pandify
     </StyledLoginButton>
   </StyledLoginContainer>
 );

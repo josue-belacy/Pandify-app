@@ -22,12 +22,6 @@ const StyledDropdown = styled.div`
     border-top: 6px solid var(--white);
   }
 
-  #order-select {
-    &:focus-visible {
-      outline: none;
-    }
-  }
-
   select {
     -webkit-appearance: none;
     appearance: none;
