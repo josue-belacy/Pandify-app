@@ -27,12 +27,12 @@ const StyledLoginButton = styled.a`
 const LOGIN_URI =
   process.env.NODE_ENV !== 'production'
     ? 'http://localhost:8888/login'
-    : 'https://spotify-profile-v2.herokuapp.com/login';
+    : 'https://pandify.herokuapp.com/login';
 
 const Login = () => (
   <StyledLoginContainer>
     <StyledLoginButton href={LOGIN_URI}>
-      Log in to Pandify by pressing the green button
+      Log in to Pandify
     </StyledLoginButton>
   </StyledLoginContainer>
 );
