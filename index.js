@@ -2,19 +2,24 @@ require('dotenv').config();
 
 const CLIENT_ID = process.env.CLIENT_ID;
 const CLIENT_SECRET = process.env.CLIENT_SECRET;
-const REDIRECT_URI = process.env.REDIRECT_URI;
-const FRONTEND_URI = process.env.FRONTEND_URI;
+let REDIRECT_URI = process.env.REDIRECT_URI || 'http://localhost:8888/callback';
+let FRONTEND_URI = process.env.FRONTEND_URI || 'http://localhost:3000';
 const PORT = process.env.PORT || 8888;
 
+if (process.env.NODE_ENV !== 'production') {
+  REDIRECT_URI = 'http://localhost:8888/callback';
+  FRONTEND_URI = 'http://localhost:3000';
+}
+
 const express = require('express');
+const request = require('request');
+const cors = require('cors');
 const querystring = require('querystring');
-const axios = require('axios');
+const cookieParser = require('cookie-parser');
 const path = require('path');
-
-const app = express();
-
-// Priority serve any static files.
-app.use(express.static(path.resolve(__dirname, './client/build')));
+const cluster = require('cluster');
+const numCPUs = require('os').cpus().length;
+const history = require('connect-history-api-fallback');
 
 /**
  * Generates a random string containing numbers and letters
@@ -30,98 +35,144 @@ const generateRandomString = length => {
   return text;
 };
 
-
 const stateKey = 'spotify_auth_state';
 
-app.get('/login', (req, res) => {
-  const state = generateRandomString(16);
-  res.cookie(stateKey, state);
+// Multi-process to utilize all CPU cores.
+if (cluster.isMaster) {
+  console.warn(`Node cluster master ${process.pid} is running`);
 
-  const scope = [
-    'user-read-private',
-    'user-read-email',
-    'user-top-read',
-  ].join(' ');
+  // Fork workers.
+  for (let i = 0; i < numCPUs; i++) {
+    cluster.fork();
+  }
 
-  const queryParams = querystring.stringify({
-    client_id: CLIENT_ID,
-    response_type: 'code',
-    redirect_uri: REDIRECT_URI,
-    state: state,
-    scope: scope,
+  cluster.on('exit', (worker, code, signal) => {
+    console.error(
+      `Node cluster worker ${worker.process.pid} exited: code ${code}, signal ${signal}`,
+    );
+  });
+} else {
+  const app = express();
+
+  // Priority serve any static files.
+  app.use(express.static(path.resolve(__dirname, '../client/build')));
+
+  app
+    .use(express.static(path.resolve(__dirname, '../client/build')))
+    .use(cors())
+    .use(cookieParser())
+    .use(
+      history({
+        verbose: true,
+        rewrites: [
+          { from: /\/login/, to: '/login' },
+          { from: /\/callback/, to: '/callback' },
+          { from: /\/refresh_token/, to: '/refresh_token' },
+        ],
+      }),
+    )
+    .use(express.static(path.resolve(__dirname, '../client/build')));
+
+  app.get('/', function (req, res) {
+    res.render(path.resolve(__dirname, '../client/build/index.html'));
   });
 
-  res.redirect(`https://accounts.spotify.com/authorize?${queryParams}`);
-});
+  app.get('/login', function (req, res) {
+    const state = generateRandomString(16);
+    res.cookie(stateKey, state);
 
+    // your application requests authorization
+    const scope =
+      'user-read-private user-read-email user-read-recently-played user-top-read user-follow-read user-follow-modify playlist-read-private playlist-read-collaborative playlist-modify-public';
 
-app.get('/callback', (req, res) => {
-  const code = req.query.code || null;
+    res.redirect(
+      `https://accounts.spotify.com/authorize?${querystring.stringify({
+        response_type: 'code',
+        client_id: CLIENT_ID,
+        scope: scope,
+        redirect_uri: REDIRECT_URI,
+        state: state,
+      })}`,
+    );
+  });
 
-  axios({
-    method: 'post',
-    url: 'https://accounts.spotify.com/api/token',
-    data: querystring.stringify({
-      grant_type: 'authorization_code',
-      code: code,
-      redirect_uri: REDIRECT_URI
-    }),
-    headers: {
-      'content-type': 'application/x-www-form-urlencoded',
-      Authorization: `Basic ${new Buffer.from(`${CLIENT_ID}:${CLIENT_SECRET}`).toString('base64')}`,
-    },
-  })
-    .then(response => {
-      if (response.status === 200) {
-        const { access_token, refresh_token, expires_in } = response.data;
+  app.get('/callback', function (req, res) {
+    // your application requests refresh and access tokens
+    // after checking the state parameter
 
-        const queryParams = querystring.stringify({
-          access_token,
-          refresh_token,
-          expires_in,
-        });
+    const code = req.query.code || null;
+    const state = req.query.state || null;
+    const storedState = req.cookies ? req.cookies[stateKey] : null;
 
-        res.redirect(`${FRONTEND_URI}/?${queryParams}`);
+    if (state === null || state !== storedState) {
+      res.redirect(`/#${querystring.stringify({ error: 'state_mismatch' })}`);
+    } else {
+      res.clearCookie(stateKey);
+      const authOptions = {
+        url: 'https://accounts.spotify.com/api/token',
+        form: {
+          code: code,
+          redirect_uri: REDIRECT_URI,
+          grant_type: 'authorization_code',
+        },
+        headers: {
+          Authorization: `Basic ${new Buffer.from(`${CLIENT_ID}:${CLIENT_SECRET}`).toString(
+            'base64',
+          )}`,
+        },
+        json: true,
+      };
 
-      } else {
-        res.redirect(`/?${querystring.stringify({ error: 'invalid_token' })}`);
+      request.post(authOptions, function (error, response, body) {
+        if (!error && response.statusCode === 200) {
+          const access_token = body.access_token;
+          const refresh_token = body.refresh_token;
+
+          // we can also pass the token to the browser to make requests from there
+          res.redirect(
+            `${FRONTEND_URI}/#${querystring.stringify({
+              access_token,
+              refresh_token,
+            })}`,
+          );
+        } else {
+          res.redirect(`/#${querystring.stringify({ error: 'invalid_token' })}`);
+        }
+      });
+    }
+  });
+
+  app.get('/refresh_token', function (req, res) {
+    // requesting access token from refresh token
+    const refresh_token = req.query.refresh_token;
+    const authOptions = {
+      url: 'https://accounts.spotify.com/api/token',
+      headers: {
+        Authorization: `Basic ${new Buffer.from(`${CLIENT_ID}:${CLIENT_SECRET}`).toString(
+          'base64',
+        )}`,
+      },
+      form: {
+        grant_type: 'refresh_token',
+        refresh_token,
+      },
+      json: true,
+    };
+
+    request.post(authOptions, function (error, response, body) {
+      if (!error && response.statusCode === 200) {
+        const access_token = body.access_token;
+        res.send({ access_token });
       }
-    })
-    .catch(error => {
-      res.send(error);
     });
-});
+  });
 
+  // All remaining requests return the React app, so it can handle routing.
+  app.get('*', function (request, response) {
+    response.sendFile(path.resolve(__dirname, '../client/public', 'index.html'));
+  });
 
-app.get('/refresh_token', (req, res) => {
-  const { refresh_token } = req.query;
-
-  axios({
-    method: 'post',
-    url: 'https://accounts.spotify.com/api/token',
-    data: querystring.stringify({
-      grant_type: 'refresh_token',
-      refresh_token: refresh_token
-    }),
-    headers: {
-      'content-type': 'application/x-www-form-urlencoded',
-      Authorization: `Basic ${new Buffer.from(`${CLIENT_ID}:${CLIENT_SECRET}`).toString('base64')}`,
-    },
-  })
-    .then(response => {
-      res.send(response.data);
-    })
-    .catch(error => {
-      res.send(error);
-    });
-});
-
-// All remaining requests return the React app, so it can handle routing.
-app.get('*', (req, res) => {
-  res.sendFile(path.resolve(__dirname, './client/build', 'index.html'));
-});
-
-
-app.listen(PORT, () => {
-  console.log(`Express app listening at http://localhost:${PORT}`);
-});
+  app.listen(PORT, function () {
+    console.warn(`Node cluster worker ${process.pid}: listening on port ${PORT}`);
+  });
+}
