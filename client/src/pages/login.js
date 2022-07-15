@@ -32,7 +32,7 @@ const LOGIN_URI =
 const Login = () => (
   <StyledLoginContainer>
     <StyledLoginButton href={LOGIN_URI}>
-      Log in to Pandify
+      Log into Pandify
     </StyledLoginButton>
   </StyledLoginContainer>
 );
